@@ -1,0 +1,84 @@
+/* === BIP-inspired tokens, palette LIGHT istituzionale (regola al volo per allineare al brand) === */
+:root {
+  --bip-bg: #F7F7F8;
+  --bip-bg-alt: #FAFAFA;
+  --bip-surface: #FFFFFF;
+  --bip-surface-hover: #F3F4F6;
+  --bip-surface-active: #ECEEF2;
+
+  --bip-border: #E5E7EB;
+  --bip-border-strong: #D1D5DB;
+  --bip-divider: #EEF0F3;
+
+  --bip-text: #111827;
+  --bip-text-strong: #0B1220;
+  --bip-text-muted: #6B7280;
+  --bip-text-dim: #9CA3AF;
+  --bip-text-inverse: #FFFFFF;
+
+  --bip-primary: #E63946;          /* coral BIP-style */
+  --bip-primary-strong: #C82A36;
+  --bip-primary-soft: #FDECEE;
+
+  --bip-accent: #111827;           /* CTA scure istituzionali */
+  --bip-accent-strong: #000000;
+
+  --bip-success: #16A34A;
+  --bip-warning: #D97706;
+  --bip-danger: #DC2626;
+  --bip-danger-soft: #FEF2F2;
+
+  --bip-radius-sm: 6px;
+  --bip-radius-md: 10px;
+  --bip-radius-lg: 14px;
+
+  --bip-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --bip-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --bip-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+
+  --bip-font: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --bip-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --bip-sidebar-w: 256px;
+  --bip-topbar-h: 56px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--bip-font);
+  background: var(--bip-bg);
+  color: var(--bip-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+textarea, input {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bip-border-strong);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,18 @@
+<header class="topbar">
+  <div class="title-block">
+    <h1 class="title">{{ title }}</h1>
+    <span class="subtitle">{{ subtitle }}</span>
+  </div>
+
+  <div class="actions">
+    @if (sessionId) {
+      <span class="session-chip" title="ID sessione corrente">
+        <span class="dot"></span>
+        sessione <code>{{ shortId(sessionId) }}</code>
+      </span>
+    }
+    <button type="button" class="profile" aria-label="Account">
+      <span>U</span>
+    </button>
+  </div>
+</header>

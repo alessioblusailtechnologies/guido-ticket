@@ -1,0 +1,21 @@
+<div class="shell">
+  <app-sidebar
+    [active]="active"
+    [busy]="busy()"
+    (newChat)="onNewChat()"
+    (navigate)="onNavigate($event)">
+  </app-sidebar>
+
+  <div class="main">
+    <app-topbar
+      [title]="active === 'assistant' ? 'Assistant' : ''"
+      subtitle="Troubleshooting ticket Veolia"
+      [sessionId]="sessionId()"
+      [busy]="busy()">
+    </app-topbar>
+
+    <section class="content">
+      <app-chat-page></app-chat-page>
+    </section>
+  </div>
+</div>

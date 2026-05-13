@@ -1,0 +1,34 @@
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">g</div>
+    <div class="brand-text">
+      <span class="brand-name">guido</span>
+      <span class="brand-sub">Troubleshooting Veolia</span>
+    </div>
+  </div>
+
+  <button type="button" class="new-chat-btn" (click)="onNewChat()" [disabled]="busy">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    Nuova chat
+  </button>
+
+  <nav class="nav">
+    <span class="nav-label">Strumenti</span>
+    <button
+      type="button"
+      class="nav-item"
+      [class.active]="active === 'assistant'"
+      (click)="onNavigate('assistant')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 4V5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+      </svg>
+      <span>Assistant</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="version">v0.1 · BIP</span>
+  </div>
+</aside>
