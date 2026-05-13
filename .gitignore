@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Profili locali con segreti ###
+**/src/main/resources/application-local.properties
+**/src/main/resources/application-*.properties
+!**/src/main/resources/application-example.properties
+
+### Frontend ###
+**/node_modules/
+**/dist/
+**/.vite/
+**/.next/
+**/build/
