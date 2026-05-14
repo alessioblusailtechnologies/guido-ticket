@@ -13,6 +13,30 @@
   gap: 14px;
   min-height: 0;
   position: relative;
+
+  &.empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 28px;
+    padding-bottom: 18vh;
+
+    .messages {
+      flex: 0 0 auto;
+      overflow: visible;
+    }
+
+    .empty-state {
+      margin: 0 auto;
+    }
+
+    .composer {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+  }
 }
 
 .messages {

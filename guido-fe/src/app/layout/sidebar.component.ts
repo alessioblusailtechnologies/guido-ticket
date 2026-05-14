@@ -22,6 +22,7 @@ import {
   Delete02Icon,
   PencilEdit02Icon,
   RefreshIcon,
+  Settings02Icon,
 } from '@hugeicons/core-free-icons';
 
 import { SessionsService, SessionSummary } from '../sessions/sessions.service';
@@ -62,7 +63,12 @@ export class SidebarComponent {
     refresh: RefreshIcon,
     edit: PencilEdit02Icon,
     delete: Delete02Icon,
+    settings: Settings02Icon,
   } as const;
+
+  onSettings(): void {
+    // mock — nessuna azione per ora
+  }
 
   constructor() {
     effect(() => {

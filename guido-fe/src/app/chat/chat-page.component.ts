@@ -6,8 +6,10 @@ import {
   HostListener,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -78,6 +80,18 @@ export class ChatPageComponent implements AfterViewChecked {
   readonly cardStates = signal<Map<string, CardState>>(new Map());
   readonly turnsSent = signal<Set<number>>(new Set());
 
+  constructor() {
+    // Quando l'utente cambia sessione (loadSession / reset), azzero gli stati locali
+    // delle card SQL del turno precedente — altrimenti vedrei i risultati dell'altra chat.
+    effect(() => {
+      this.chat.sessionId();
+      untracked(() => {
+        this.cardStates.set(new Map());
+        this.turnsSent.set(new Set());
+      });
+    });
+  }
+
   readonly icons = {
     tick: Tick02Icon,
     cancel: Cancel01Icon,
@@ -85,14 +99,15 @@ export class ChatPageComponent implements AfterViewChecked {
     send: SentIcon,
   } as const;
 
-  readonly turns = computed<RenderedTurn[]>(() =>
-    this.chat.history().map((turn, idx) => ({
+  readonly turns = computed<RenderedTurn[]>(() => {
+    const sid = this.chat.sessionId() ?? 'pending';
+    return this.chat.history().map((turn, idx) => ({
       ...turn,
       html: this.renderMarkdown(turn.text),
-      segments: turn.role === 'assistant' ? this.splitSegments(turn.text, idx) : undefined,
+      segments: turn.role === 'assistant' ? this.splitSegments(turn.text, idx, sid) : undefined,
       turnIndex: idx,
-    })),
-  );
+    }));
+  });
 
   readonly canSend = computed(
     () => !this.busy() && (this.draft().trim().length > 0 || this.attachments().length > 0),
@@ -253,7 +268,7 @@ export class ChatPageComponent implements AfterViewChecked {
     this.attachments.update(curr => [...curr, ...files]);
   }
 
-  private splitSegments(text: string, turnIndex: number): Segment[] {
+  private splitSegments(text: string, turnIndex: number, sessionId: string): Segment[] {
     if (!text) return [];
     const segments: Segment[] = [];
     const regex = /```sql\s*\n([\s\S]*?)```/gi;
@@ -265,7 +280,11 @@ export class ChatPageComponent implements AfterViewChecked {
       if (before.trim().length > 0) {
         segments.push({ kind: 'markdown', html: this.renderMarkdown(before) });
       }
-      segments.push({ kind: 'sql', sql: match[1].trim(), cardId: `t${turnIndex}-s${segIdx++}` });
+      segments.push({
+        kind: 'sql',
+        sql: match[1].trim(),
+        cardId: `${sessionId}-t${turnIndex}-s${segIdx++}`,
+      });
       lastIndex = match.index + match[0].length;
     }
     const tail = text.slice(lastIndex);

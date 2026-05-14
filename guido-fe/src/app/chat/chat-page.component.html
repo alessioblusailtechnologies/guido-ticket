@@ -1,4 +1,4 @@
-<div class="chat-shell" [class.dragging]="dragOver()">
+<div class="chat-shell" [class.dragging]="dragOver()" [class.empty]="turns().length === 0">
   <main class="messages" #scroller>
     @if (turns().length === 0) {
       <div class="empty-state">

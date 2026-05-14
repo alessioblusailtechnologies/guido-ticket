@@ -82,7 +82,13 @@
 
   </div>
 
-  <div class="sidebar-footer">
-    <span class="version">v0.1 · BIP</span>
+  <div class="sidebar-bottom">
+    <button type="button" class="nav-item bottom-item" (click)="onSettings()">
+      <hugeicons-icon [icon]="icons.settings" [size]="18" [strokeWidth]="1.8"></hugeicons-icon>
+      <span>Impostazioni</span>
+    </button>
+    <div class="sidebar-footer">
+      <span class="version">v0.1 · BIP</span>
+    </div>
   </div>
 </aside>
