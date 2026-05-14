@@ -14,6 +14,14 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import {
+  Attachment01Icon,
+  Cancel01Icon,
+  SentIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons';
+
 import { ChatService, ChatTurn, QueryResultAttachment } from './chat.service';
 import { SqlProposalCardComponent, SqlCardStateEvent, SqlCardStatus } from '../sql/sql-proposal-card.component';
 import { SqlResult } from '../sql/sql.service';
@@ -47,7 +55,7 @@ interface CardState {
 @Component({
   selector: 'app-chat-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, SqlProposalCardComponent, QueryResultsAttachmentComponent],
+  imports: [CommonModule, FormsModule, SqlProposalCardComponent, QueryResultsAttachmentComponent, HugeiconsIconComponent],
   templateUrl: './chat-page.component.html',
   styleUrl: './chat-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -69,6 +77,13 @@ export class ChatPageComponent implements AfterViewChecked {
 
   readonly cardStates = signal<Map<string, CardState>>(new Map());
   readonly turnsSent = signal<Set<number>>(new Set());
+
+  readonly icons = {
+    tick: Tick02Icon,
+    cancel: Cancel01Icon,
+    attachment: Attachment01Icon,
+    send: SentIcon,
+  } as const;
 
   readonly turns = computed<RenderedTurn[]>(() =>
     this.chat.history().map((turn, idx) => ({

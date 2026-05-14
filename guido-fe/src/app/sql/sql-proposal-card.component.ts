@@ -9,6 +9,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { PlayIcon, Tick02Icon } from '@hugeicons/core-free-icons';
+
 import { SqlResult, SqlService } from './sql.service';
 
 export type SqlCardStatus = 'proposed' | 'executing' | 'done' | 'error';
@@ -25,7 +28,7 @@ export interface SqlCardStateEvent {
 @Component({
   selector: 'app-sql-proposal-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HugeiconsIconComponent],
   templateUrl: './sql-proposal-card.component.html',
   styleUrl: './sql-proposal-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +45,11 @@ export class SqlProposalCardComponent {
   readonly state = signal<SqlCardStatus>('proposed');
   readonly result = signal<SqlResult | null>(null);
   readonly errorMessage = signal<string | null>(null);
+
+  readonly icons = {
+    play: PlayIcon,
+    tick: Tick02Icon,
+  } as const;
 
   async runQuery(): Promise<void> {
     if (this.state() === 'executing' || this.state() === 'done') {

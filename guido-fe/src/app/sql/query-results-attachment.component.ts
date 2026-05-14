@@ -1,12 +1,15 @@
 import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { AlertCircleIcon, ArrowDown01Icon, File01Icon } from '@hugeicons/core-free-icons';
+
 import { QueryResultAttachment } from '../chat/chat.service';
 
 @Component({
   selector: 'app-query-results-attachment',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HugeiconsIconComponent],
   templateUrl: './query-results-attachment.component.html',
   styleUrl: './query-results-attachment.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,6 +18,12 @@ export class QueryResultsAttachmentComponent {
   @Input({ required: true }) items: QueryResultAttachment[] = [];
 
   readonly expanded = signal<Set<number>>(new Set());
+
+  readonly icons = {
+    file: File01Icon,
+    alert: AlertCircleIcon,
+    caret: ArrowDown01Icon,
+  } as const;
 
   toggle(index: number): void {
     this.expanded.update(set => {

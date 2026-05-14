@@ -15,6 +15,15 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import {
+  Add01Icon,
+  BubbleChatIcon,
+  Delete02Icon,
+  PencilEdit02Icon,
+  RefreshIcon,
+} from '@hugeicons/core-free-icons';
+
 import { SessionsService, SessionSummary } from '../sessions/sessions.service';
 import { ChatService } from '../chat/chat.service';
 
@@ -23,7 +32,7 @@ export type NavKey = 'assistant';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,6 +55,14 @@ export class SidebarComponent {
   readonly currentSessionId = this.chat.sessionId;
   readonly editingId = signal<string | null>(null);
   readonly editingTitle = signal<string>('');
+
+  readonly icons = {
+    add: Add01Icon,
+    assistant: BubbleChatIcon,
+    refresh: RefreshIcon,
+    edit: PencilEdit02Icon,
+    delete: Delete02Icon,
+  } as const;
 
   constructor() {
     effect(() => {

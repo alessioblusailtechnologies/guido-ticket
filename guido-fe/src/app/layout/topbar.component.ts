@@ -1,12 +1,15 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Settings02Icon } from '@hugeicons/core-free-icons';
+
 import { UsageInfo } from '../chat/chat.service';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HugeiconsIconComponent],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +20,10 @@ export class TopbarComponent {
   @Input() sessionId: string | null = null;
   @Input() busy = false;
   @Input() usage: UsageInfo | null = null;
+
+  readonly icons = {
+    settings: Settings02Icon,
+  } as const;
 
   shortId(id: string | null): string {
     return id ? id.slice(0, 8) : '';
