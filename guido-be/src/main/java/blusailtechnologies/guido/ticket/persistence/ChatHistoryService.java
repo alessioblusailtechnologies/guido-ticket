@@ -87,6 +87,17 @@ public class ChatHistoryService {
 		return sessions.delete(sessionId);
 	}
 
+	public int renameSession(String sessionId, String newTitle) {
+		String clean = newTitle == null ? "" : newTitle.trim();
+		if (clean.isBlank()) {
+			clean = "Nuova conversazione";
+		}
+		if (clean.length() > 255) {
+			clean = clean.substring(0, 255);
+		}
+		return sessions.updateTitle(sessionId, clean);
+	}
+
 	private String toJsonOrNull(Object value) {
 		if (value == null) return null;
 		try {

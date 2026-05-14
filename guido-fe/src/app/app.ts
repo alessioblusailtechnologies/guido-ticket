@@ -38,4 +38,8 @@ export class App {
       console.error('Caricamento sessione fallito', err);
     }
   }
+
+  onSessionDeleted(_id: string): void {
+    this.chat.reset();
+  }
 }

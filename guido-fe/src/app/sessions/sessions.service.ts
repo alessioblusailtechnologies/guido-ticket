@@ -54,6 +54,12 @@ export class SessionsService {
     return firstValueFrom(this.http.get<SessionDetail>(`/api/sessions/${id}`));
   }
 
+  rename(id: string, title: string): Promise<SessionSummary> {
+    return firstValueFrom(
+      this.http.patch<SessionSummary>(`/api/sessions/${id}`, { title }),
+    );
+  }
+
   delete(id: string): Promise<void> {
     return firstValueFrom(this.http.delete<void>(`/api/sessions/${id}`));
   }

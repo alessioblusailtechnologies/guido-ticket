@@ -14,7 +14,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,11 +72,27 @@ public class SessionsController {
 		return ResponseEntity.ok(new SessionDetail(toSummary(opt.get()), dtos));
 	}
 
+	@PatchMapping("/{id}")
+	public ResponseEntity<SessionSummary> rename(
+			@PathVariable("id") String id,
+			@RequestBody RenameRequest body) {
+		int updated = history.renameSession(id, body.title());
+		if (updated == 0) {
+			return ResponseEntity.notFound().build();
+		}
+		return history.findSession(id)
+				.map(SessionsController::toSummary)
+				.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
+	}
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable("id") String id) {
 		int deleted = history.deleteSession(id);
 		return deleted > 0 ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
 	}
+
+	public record RenameRequest(String title) {}
 
 	private static SessionSummary toSummary(ChatSessionRow r) {
 		return new SessionSummary(

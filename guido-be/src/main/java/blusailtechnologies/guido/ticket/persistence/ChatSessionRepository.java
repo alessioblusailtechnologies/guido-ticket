@@ -69,6 +69,12 @@ public class ChatSessionRepository {
 				""", inputTok, outputTok, cacheCreate, cacheRead, cost, id);
 	}
 
+	public int updateTitle(String id, String title) {
+		return jdbc.update(
+				"UPDATE chat_session SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+				title, id);
+	}
+
 	public int delete(String id) {
 		return jdbc.update("DELETE FROM chat_session WHERE id = ?", id);
 	}

@@ -1,15 +1,19 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   Output,
+  QueryList,
+  ViewChildren,
   effect,
   inject,
   signal,
   untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import { SessionsService, SessionSummary } from '../sessions/sessions.service';
 import { ChatService } from '../chat/chat.service';
@@ -19,7 +23,7 @@ export type NavKey = 'assistant';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,17 +37,19 @@ export class SidebarComponent {
   @Output() newChat = new EventEmitter<void>();
   @Output() navigate = new EventEmitter<NavKey>();
   @Output() openSession = new EventEmitter<string>();
+  @Output() sessionDeleted = new EventEmitter<string>();
+
+  @ViewChildren('titleInput') private titleInputs?: QueryList<ElementRef<HTMLInputElement>>;
 
   readonly sessions = signal<SessionSummary[]>([]);
   readonly loading = signal(false);
   readonly currentSessionId = this.chat.sessionId;
+  readonly editingId = signal<string | null>(null);
+  readonly editingTitle = signal<string>('');
 
   constructor() {
-    // First run = caricamento iniziale; ri-esegue su session_started e usage SSE events.
     effect(() => {
       this.chat.sessionsRefreshTrigger();
-      // untracked: l'esecuzione di refresh() legge signal (loading, sessions) che NON devono
-      // diventare dipendenze dell'effect — altrimenti loop infinito (loading flip → re-run).
       untracked(() => void this.refresh());
     });
   }
@@ -57,12 +63,71 @@ export class SidebarComponent {
   }
 
   onSelectSession(id: string): void {
-    if (this.busy) return;
+    if (this.busy || this.editingId() === id) return;
     this.openSession.emit(id);
   }
 
   onRefreshClick(): void {
     void this.refresh();
+  }
+
+  startRename(event: MouseEvent, session: SessionSummary): void {
+    event.stopPropagation();
+    this.editingId.set(session.id);
+    this.editingTitle.set(session.title);
+    setTimeout(() => {
+      const input = this.titleInputs?.first?.nativeElement;
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    });
+  }
+
+  cancelRename(): void {
+    this.editingId.set(null);
+    this.editingTitle.set('');
+  }
+
+  async confirmRename(session: SessionSummary): Promise<void> {
+    const newTitle = this.editingTitle().trim();
+    this.editingId.set(null);
+    if (!newTitle || newTitle === session.title) {
+      return;
+    }
+    this.sessions.update(list =>
+      list.map(s => (s.id === session.id ? { ...s, title: newTitle } : s)),
+    );
+    try {
+      await this.sessionsService.rename(session.id, newTitle);
+    } catch {
+      void this.refresh();
+    }
+  }
+
+  onRenameKey(event: KeyboardEvent, session: SessionSummary): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      void this.confirmRename(session);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelRename();
+    }
+  }
+
+  async onDelete(event: MouseEvent, session: SessionSummary): Promise<void> {
+    event.stopPropagation();
+    const ok = window.confirm(`Eliminare la conversazione "${session.title}"?`);
+    if (!ok) return;
+    this.sessions.update(list => list.filter(s => s.id !== session.id));
+    try {
+      await this.sessionsService.delete(session.id);
+      if (this.currentSessionId() === session.id) {
+        this.sessionDeleted.emit(session.id);
+      }
+    } catch {
+      void this.refresh();
+    }
   }
 
   formatCost(cost: number): string {
