@@ -28,15 +28,78 @@
         </div>
         <div class="bubble">
           @if (turn.role === 'user') {
-            <pre class="user-text">{{ turn.text }}</pre>
+            @if (turn.queryResults?.length) {
+              <div class="user-results-header">
+                Risultati query inviati all'agente
+              </div>
+              <app-query-results-attachment [items]="turn.queryResults!"></app-query-results-attachment>
+            } @else {
+              <pre class="user-text">{{ turn.text }}</pre>
+            }
           } @else {
-            @if (turn.pending) {
+            @if (turn.steps?.length) {
+              <div class="steps" [class.collapsed]="!turn.pending && !!turn.text">
+                @for (step of turn.steps; track $index) {
+                  <div class="step" [class.running]="step.state === 'running'" [class.done]="step.state === 'done'" [class.error]="step.state === 'error'">
+                    <span class="step-icon" aria-hidden="true">
+                      @switch (step.state) {
+                        @case ('running') { <span class="dot-spin"></span> }
+                        @case ('done') {
+                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                        }
+                        @case ('error') {
+                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        }
+                      }
+                    </span>
+                    <span class="step-tool">{{ step.tool }}</span>
+                    <span class="step-summary">{{ step.summary }}</span>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (turn.pending && !turn.steps?.length) {
               <div class="thinking">
                 <span></span><span></span><span></span>
               </div>
-            } @else if (turn.error) {
+            }
+            @if (turn.error) {
               <div class="error">⚠ {{ turn.error }}</div>
-            } @else {
+            }
+            @if (turn.segments?.length) {
+              @for (seg of turn.segments; track $index) {
+                @if (seg.kind === 'markdown') {
+                  <div class="markdown" [innerHTML]="seg.html"></div>
+                } @else {
+                  <app-sql-proposal-card
+                    [sql]="seg.sql"
+                    [cardId]="seg.cardId"
+                    [sessionId]="sessionId()"
+                    (stateChanged)="onCardStateChanged($event)">
+                  </app-sql-proposal-card>
+                }
+              }
+              @if (pendingFeedbacksForTurn(turn).count > 0 || isTurnSent(turn)) {
+                <div class="batch-row">
+                  @if (isTurnSent(turn)) {
+                    <span class="batch-sent">
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                      Risultati inviati all'agente
+                    </span>
+                  } @else {
+                    @let p = pendingFeedbacksForTurn(turn);
+                    <button type="button" class="batch-send-btn" (click)="submitBatch(turn)" [disabled]="!canSubmitBatch(turn)">
+                      Invia all'agente
+                      <span class="batch-count">{{ p.count }} risultat{{ p.count === 1 ? 'o' : 'i' }}</span>
+                      @if (p.executing > 0) {
+                        <span class="batch-hint">· attendo {{ p.executing }} in esecuzione…</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            } @else if (turn.text) {
               <div class="markdown" [innerHTML]="turn.html"></div>
             }
           }

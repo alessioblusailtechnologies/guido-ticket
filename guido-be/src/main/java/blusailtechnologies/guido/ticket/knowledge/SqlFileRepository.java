@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -68,6 +69,35 @@ public class SqlFileRepository {
 			throw new UncheckedIOException("Impossibile leggere i file in " + baseDir, e);
 		}
 	}
+
+	public List<ContentHit> searchByContent(String pattern, int maxHits, int snippetChars) {
+		if (pattern == null || pattern.isBlank()) {
+			return List.of();
+		}
+		String needle = pattern.toLowerCase(Locale.ROOT);
+		List<ContentHit> hits = new ArrayList<>();
+		List<SqlFile> all = readAll();
+		for (SqlFile f : all) {
+			String content = f.content();
+			String lower = content.toLowerCase(Locale.ROOT);
+			int idx = lower.indexOf(needle);
+			if (idx < 0) {
+				continue;
+			}
+			int start = Math.max(0, idx - snippetChars / 3);
+			int end = Math.min(content.length(), idx + needle.length() + (2 * snippetChars) / 3);
+			String snippet = content.substring(start, end).replaceAll("\\s+", " ").trim();
+			if (start > 0) snippet = "…" + snippet;
+			if (end < content.length()) snippet = snippet + "…";
+			hits.add(new ContentHit(f.name(), snippet));
+			if (hits.size() >= maxHits) {
+				break;
+			}
+		}
+		return hits;
+	}
+
+	public record ContentHit(String name, String snippet) {}
 
 	private SqlFile toSqlFile(Path p) {
 		try {

@@ -1,0 +1,69 @@
+<div class="qr-wrap">
+  <div class="qr-chips">
+    @for (item of items; track $index) {
+      <button
+        type="button"
+        class="qr-chip"
+        [class.expanded]="isOpen($index)"
+        [class.error]="item.status === 'error'"
+        (click)="toggle($index)"
+        [attr.aria-expanded]="isOpen($index)">
+        <span class="qr-icon" aria-hidden="true">
+          @if (item.status === 'error') {
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          } @else {
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          }
+        </span>
+        <span class="qr-name">{{ item.label }}</span>
+        <span class="qr-meta">{{ metaLabel(item) }}</span>
+        <svg class="qr-caret" [class.open]="isOpen($index)" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    }
+  </div>
+
+  @for (item of items; track $index) {
+    @if (isOpen($index)) {
+      <div class="qr-detail">
+        <pre class="qr-sql"><code>{{ item.sql }}</code></pre>
+
+        @if (item.status === 'error') {
+          <div class="qr-error">⚠ {{ item.error }}</div>
+        } @else if (item.result; as r) {
+          <div class="qr-meta-row">
+            <span class="meta-pill">{{ r.rowCount }} righe</span>
+            <span class="meta-pill">limit {{ r.appliedLimit }}</span>
+            @if (r.truncated) { <span class="meta-pill warn">truncated</span> }
+            <span class="meta-pill">{{ r.elapsedMillis }} ms</span>
+          </div>
+
+          @if (r.rowCount > 0) {
+            <div class="qr-table-wrap">
+              <table class="qr-table">
+                <thead>
+                  <tr>
+                    @for (col of r.columns; track col) { <th>{{ col }}</th> }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of visibleRows(item); track $index) {
+                    <tr>
+                      @for (col of r.columns; track col) {
+                        <td>{{ formatCell(row[col]) }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (r.rowCount > 30) {
+              <div class="qr-more">… prime 30 righe sul totale di {{ r.rowCount }}</div>
+            }
+          } @else {
+            <div class="qr-empty">Nessuna riga.</div>
+          }
+        }
+      </div>
+    }
+  }
+</div>

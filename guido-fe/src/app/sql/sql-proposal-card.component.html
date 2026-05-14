@@ -1,0 +1,58 @@
+<div class="sql-card" [class.executing]="state() === 'executing'" [class.done]="state() === 'done'" [class.error]="state() === 'error'">
+  <div class="sql-header">
+    <span class="sql-badge">SQL · proposta dall'agente</span>
+    <button type="button" class="exec-btn" (click)="runQuery()" [disabled]="state() === 'executing' || state() === 'done'">
+      @if (state() === 'executing') {
+        <span class="dot-spin"></span>
+        Esecuzione…
+      } @else if (state() === 'done') {
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        Eseguita
+      } @else {
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>
+        Esegui
+      }
+    </button>
+  </div>
+
+  <pre class="sql-body"><code>{{ sql }}</code></pre>
+
+  @if (state() === 'error' && errorMessage()) {
+    <div class="sql-error">⚠ {{ errorMessage() }}</div>
+  }
+
+  @if (state() === 'done' && result(); as r) {
+    <div class="sql-meta">
+      <span class="meta-pill">{{ r.rowCount }} righe</span>
+      <span class="meta-pill">limit {{ r.appliedLimit }}</span>
+      @if (r.truncated) { <span class="meta-pill warn">truncated</span> }
+      <span class="meta-pill">{{ r.elapsedMillis }} ms</span>
+    </div>
+
+    @if (r.rowCount > 0) {
+      <div class="sql-table-wrap">
+        <table class="sql-table">
+          <thead>
+            <tr>
+              @for (col of r.columns; track col) { <th>{{ col }}</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of visibleRows(r); track $index) {
+              <tr>
+                @for (col of r.columns; track col) {
+                  <td>{{ formatCell(row[col]) }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (r.rowCount > 30) {
+        <div class="sql-more">… (prime 30 righe mostrate sul totale di {{ r.rowCount }})</div>
+      }
+    } @else {
+      <div class="sql-empty">Nessuna riga.</div>
+    }
+  }
+</div>

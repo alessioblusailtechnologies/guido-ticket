@@ -6,6 +6,7 @@ public record AttachmentContent(
 		String filename,
 		MimeType mimeType,
 		String extractedText,
+		boolean truncated,
 		byte[] imageBytes
 ) {
 

@@ -6,7 +6,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record KnowledgeProperties(
 		String tablesDir,
 		String proceduresDir,
-		String vectorStoreDir,
-		int topK
+		String sourcesDir,
+		String projectMapFile,
+		int searchMaxHits,
+		int searchSnippetChars,
+		int maxContentChars
 ) {
 }
