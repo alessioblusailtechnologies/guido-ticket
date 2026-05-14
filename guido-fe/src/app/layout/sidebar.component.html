@@ -1,12 +1,9 @@
 <aside class="sidebar">
   <div class="brand">
-    <div class="brand-mark">g</div>
-    <div class="brand-text">
-      <span class="brand-name">guido</span>
-      <span class="brand-sub">Troubleshooting Veolia</span>
-    </div>
+    <img class="brand-logo" src="guido-logo.svg" alt="Guido" />
   </div>
 
+  <div class="sidebar-body">
   <button type="button" class="new-chat-btn" (click)="onNewChat()" [disabled]="busy">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M12 5v14M5 12h14"/>
@@ -60,6 +57,8 @@
         <span class="sessions-empty">Nessuna conversazione ancora.</span>
       }
     </div>
+  </div>
+
   </div>
 
   <div class="sidebar-footer">

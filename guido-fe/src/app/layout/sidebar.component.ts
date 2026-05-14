@@ -3,10 +3,11 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnInit,
   Output,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -23,7 +24,7 @@ export type NavKey = 'assistant';
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   private readonly sessionsService = inject(SessionsService);
   private readonly chat = inject(ChatService);
 
@@ -37,8 +38,14 @@ export class SidebarComponent implements OnInit {
   readonly loading = signal(false);
   readonly currentSessionId = this.chat.sessionId;
 
-  ngOnInit(): void {
-    void this.refresh();
+  constructor() {
+    // First run = caricamento iniziale; ri-esegue su session_started e usage SSE events.
+    effect(() => {
+      this.chat.sessionsRefreshTrigger();
+      // untracked: l'esecuzione di refresh() legge signal (loading, sessions) che NON devono
+      // diventare dipendenze dell'effect — altrimenti loop infinito (loading flip → re-run).
+      untracked(() => void this.refresh());
+    });
   }
 
   onNewChat(): void {

@@ -74,6 +74,13 @@ export class ChatService {
   readonly busy = signal(false);
   readonly sessionId = signal<string | null>(null);
   readonly usage = signal<UsageInfo>(EMPTY_USAGE);
+  /**
+   * Counter incrementato quando la lista delle conversazioni va ricaricata:
+   * - all'avvio di una nuova chat lato server (session_started)
+   * - dopo l'aggiornamento del costo a fine turno (usage)
+   * La sidebar lo osserva via effect() e ricarica.
+   */
+  readonly sessionsRefreshTrigger = signal(0);
 
   async send(message: string, attachments: File[], queryResults?: QueryResultAttachment[]): Promise<void> {
     const userTurn: ChatTurn = {
@@ -213,6 +220,7 @@ export class ChatService {
         if (ev.summary) {
           this.sessionId.set(ev.summary);
         }
+        this.sessionsRefreshTrigger.update(v => v + 1);
         return;
       case 'tool_started':
         this.applyToLastAssistantTurn(turn => ({
@@ -242,6 +250,7 @@ export class ChatService {
             totalCostUsd: u.sessionTotalCostUsd ?? 0,
           });
         }
+        this.sessionsRefreshTrigger.update(v => v + 1);
         return;
       case 'complete':
         this.applyToLastAssistantTurn(turn => ({
