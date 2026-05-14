@@ -19,6 +19,7 @@ export class App {
 
   readonly busy = this.chat.busy;
   readonly sessionId = this.chat.sessionId;
+  readonly usage = this.chat.usage;
 
   active: NavKey = 'assistant';
 
@@ -28,5 +29,13 @@ export class App {
 
   onNavigate(key: NavKey): void {
     this.active = key;
+  }
+
+  async onOpenSession(id: string): Promise<void> {
+    try {
+      await this.chat.loadSession(id);
+    } catch (err) {
+      console.error('Caricamento sessione fallito', err);
+    }
   }
 }

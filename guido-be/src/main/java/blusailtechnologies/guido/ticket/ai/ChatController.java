@@ -27,10 +27,11 @@ public class ChatController {
 	public SseEmitter chat(
 			@RequestParam(value = "sessionId", required = false) String sessionId,
 			@RequestParam("message") String message,
-			@RequestParam(value = "attachments", required = false) List<MultipartFile> attachments) {
+			@RequestParam(value = "attachments", required = false) List<MultipartFile> attachments,
+			@RequestParam(value = "queryResults", required = false) String queryResultsJson) {
 		String effectiveSession = (sessionId == null || sessionId.isBlank())
 				? UUID.randomUUID().toString()
 				: sessionId;
-		return agent.chatStream(effectiveSession, message, attachments);
+		return agent.chatStream(effectiveSession, message, attachments, queryResultsJson);
 	}
 }

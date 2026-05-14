@@ -3,7 +3,8 @@
     [active]="active"
     [busy]="busy()"
     (newChat)="onNewChat()"
-    (navigate)="onNavigate($event)">
+    (navigate)="onNavigate($event)"
+    (openSession)="onOpenSession($event)">
   </app-sidebar>
 
   <div class="main">
@@ -11,7 +12,8 @@
       [title]="active === 'assistant' ? 'Assistant' : ''"
       subtitle="Troubleshooting ticket Veolia"
       [sessionId]="sessionId()"
-      [busy]="busy()">
+      [busy]="busy()"
+      [usage]="usage()">
     </app-topbar>
 
     <section class="content">

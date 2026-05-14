@@ -1,6 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 
 import { SqlResult } from '../sql/sql.service';
+import { SessionsService, SessionMessage } from '../sessions/sessions.service';
 
 export interface ToolStep {
   tool: string;
@@ -26,19 +27,53 @@ export interface ChatTurn {
   error?: string;
 }
 
+export interface UsageInfo {
+  model: string | null;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCacheCreationTokens: number;
+  totalCacheReadTokens: number;
+  totalCostUsd: number;
+}
+
 interface ServerEvent {
-  type: 'session_started' | 'tool_started' | 'tool_finished' | 'tool_error' | 'complete' | 'error';
+  type: 'session_started' | 'tool_started' | 'tool_finished' | 'tool_error' | 'complete' | 'error' | 'usage';
   tool?: string;
   summary?: string;
   detail?: string;
   timestamp?: string;
+  usage?: {
+    model?: string;
+    inputTokens?: number;
+    outputTokens?: number;
+    cacheCreationTokens?: number;
+    cacheReadTokens?: number;
+    costUsd?: number;
+    sessionTotalInputTokens?: number;
+    sessionTotalOutputTokens?: number;
+    sessionTotalCacheCreationTokens?: number;
+    sessionTotalCacheReadTokens?: number;
+    sessionTotalCostUsd?: number;
+  };
 }
+
+const EMPTY_USAGE: UsageInfo = {
+  model: null,
+  totalInputTokens: 0,
+  totalOutputTokens: 0,
+  totalCacheCreationTokens: 0,
+  totalCacheReadTokens: 0,
+  totalCostUsd: 0,
+};
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
+  private readonly sessionsService = inject(SessionsService);
+
   readonly history = signal<ChatTurn[]>([]);
   readonly busy = signal(false);
   readonly sessionId = signal<string | null>(null);
+  readonly usage = signal<UsageInfo>(EMPTY_USAGE);
 
   async send(message: string, attachments: File[], queryResults?: QueryResultAttachment[]): Promise<void> {
     const userTurn: ChatTurn = {
@@ -59,6 +94,9 @@ export class ChatService {
     }
     for (const file of attachments) {
       formData.append('attachments', file, file.name);
+    }
+    if (queryResults && queryResults.length > 0) {
+      formData.append('queryResults', JSON.stringify(queryResults));
     }
 
     try {
@@ -85,6 +123,46 @@ export class ChatService {
   reset(): void {
     this.sessionId.set(null);
     this.history.set([]);
+    this.usage.set(EMPTY_USAGE);
+  }
+
+  async loadSession(id: string): Promise<void> {
+    const detail = await this.sessionsService.load(id);
+    this.sessionId.set(detail.session.id);
+    this.usage.set({
+      model: detail.session.model,
+      totalInputTokens: detail.session.totalInputTokens,
+      totalOutputTokens: detail.session.totalOutputTokens,
+      totalCacheCreationTokens: detail.session.totalCacheCreationTokens,
+      totalCacheReadTokens: detail.session.totalCacheReadTokens,
+      totalCostUsd: detail.session.totalCostUsd,
+    });
+    this.history.set(detail.messages.map(m => this.toTurn(m)));
+  }
+
+  private toTurn(m: SessionMessage): ChatTurn {
+    const role: 'user' | 'assistant' = m.role === 'assistant' ? 'assistant' : 'user';
+    return {
+      role,
+      text: m.content ?? '',
+      attachments: this.coerceAttachments(m.attachments),
+      queryResults: this.coerceQueryResults(m.queryResults),
+      steps: undefined,
+    };
+  }
+
+  private coerceAttachments(raw: unknown): ChatTurn['attachments'] {
+    if (!Array.isArray(raw)) return undefined;
+    return raw.map(r => ({
+      name: String((r as { name?: unknown }).name ?? ''),
+      size: Number((r as { size?: unknown }).size ?? 0),
+      type: String((r as { type?: unknown }).type ?? ''),
+    }));
+  }
+
+  private coerceQueryResults(raw: unknown): QueryResultAttachment[] | undefined {
+    if (!Array.isArray(raw)) return undefined;
+    return raw.map(r => r as QueryResultAttachment);
   }
 
   private async consumeSse(body: ReadableStream<Uint8Array>): Promise<void> {
@@ -151,6 +229,19 @@ export class ChatService {
         return;
       case 'tool_error':
         this.markLastMatchingStep(ev.tool, 'error', ev.summary);
+        return;
+      case 'usage':
+        if (ev.usage) {
+          const u = ev.usage;
+          this.usage.set({
+            model: u.model ?? this.usage().model,
+            totalInputTokens: u.sessionTotalInputTokens ?? 0,
+            totalOutputTokens: u.sessionTotalOutputTokens ?? 0,
+            totalCacheCreationTokens: u.sessionTotalCacheCreationTokens ?? 0,
+            totalCacheReadTokens: u.sessionTotalCacheReadTokens ?? 0,
+            totalCostUsd: u.sessionTotalCostUsd ?? 0,
+          });
+        }
         return;
       case 'complete':
         this.applyToLastAssistantTurn(turn => ({

@@ -28,6 +28,40 @@
     </button>
   </nav>
 
+  <div class="sessions">
+    <div class="sessions-header">
+      <span class="nav-label">Conversazioni</span>
+      @if (loading()) {
+        <span class="sessions-spinner"></span>
+      } @else {
+        <button type="button" class="sessions-refresh" (click)="onRefreshClick()" title="Ricarica la lista">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+      }
+    </div>
+
+    <div class="sessions-list">
+      @for (s of sessions(); track s.id) {
+        <button
+          type="button"
+          class="session-item"
+          [class.active]="s.id === currentSessionId()"
+          [disabled]="busy"
+          (click)="onSelectSession(s.id)">
+          <span class="session-title">{{ s.title }}</span>
+          <span class="session-meta">
+            <span>{{ formatRelative(s.updatedAt) }}</span>
+            <span class="dot-sep">·</span>
+            <span class="session-cost">{{ formatCost(s.totalCostUsd) }}</span>
+          </span>
+        </button>
+      }
+      @if (!loading() && sessions().length === 0) {
+        <span class="sessions-empty">Nessuna conversazione ancora.</span>
+      }
+    </div>
+  </div>
+
   <div class="sidebar-footer">
     <span class="version">v0.1 · BIP</span>
   </div>

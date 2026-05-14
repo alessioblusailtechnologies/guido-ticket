@@ -1,14 +1,23 @@
 package blusailtechnologies.guido.ticket.ai.progress;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ToolEvent(
 		String type,
 		String tool,
 		String summary,
 		String detail,
-		Instant timestamp
+		Instant timestamp,
+		Usage usage
 ) {
+
+	public ToolEvent(String type, String tool, String summary, String detail, Instant timestamp) {
+		this(type, tool, summary, detail, timestamp, null);
+	}
 
 	public static ToolEvent sessionStarted(String sessionId) {
 		return new ToolEvent("session_started", null, sessionId, null, Instant.now());
@@ -33,4 +42,23 @@ public record ToolEvent(
 	public static ToolEvent fatal(String message) {
 		return new ToolEvent("error", null, message, null, Instant.now());
 	}
+
+	public static ToolEvent usage(Usage usage) {
+		return new ToolEvent("usage", null, null, null, Instant.now(), usage);
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public record Usage(
+			String model,
+			Integer inputTokens,
+			Integer outputTokens,
+			Integer cacheCreationTokens,
+			Integer cacheReadTokens,
+			BigDecimal costUsd,
+			Long sessionTotalInputTokens,
+			Long sessionTotalOutputTokens,
+			Long sessionTotalCacheCreationTokens,
+			Long sessionTotalCacheReadTokens,
+			BigDecimal sessionTotalCostUsd
+	) {}
 }
